@@ -68,6 +68,8 @@ python server.py --host 192.168.1.100
 # Output: Waiting for client connection...
 ```
 
+In most cases, you can leave the host to default `0.0.0.0`.
+
 Machine 2 (Client):
 ```bash
 python client.py --host 192.168.1.100
