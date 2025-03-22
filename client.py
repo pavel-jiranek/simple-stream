@@ -26,4 +26,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             start_index = i * 16
             end_index = start_index + 16
             num1, num2 = struct.unpack('dd', data[start_index:end_index])
-            print(f"Received: {num1}, {num2}")
+            print(f"Received: {num1}, {num2} from {host}:{port}")

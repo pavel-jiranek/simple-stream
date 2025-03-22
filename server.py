@@ -20,6 +20,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     print(f"Server streaming on {host}:{port}")
 
     while True:
+        print("Waiting for client connection...")
         conn, addr = s.accept()
         print(f"Client connected from {addr}")
 
@@ -31,7 +32,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     message = struct.pack('dd', num1, num2)
 
                     conn.sendall(message)
-                    print(f"Sent: {num1}, {num2}")
+                    print(f"Sent: {num1}, {num2} to {addr}")
 
                     time.sleep(0.1)
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
