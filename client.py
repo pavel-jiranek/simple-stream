@@ -21,5 +21,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         if not data:
             break
 
-        num1, num2 = struct.unpack('dd', data)
-        print(f"Received: {num1}, {num2}")
+        num_messages = len(data) // 16 # 16 bytes per message = 2 doubles
+        for i in range(num_messages):
+            start_index = i * 16
+            end_index = start_index + 16
+            num1, num2 = struct.unpack('dd', data[start_index:end_index])
+            print(f"Received: {num1}, {num2}")

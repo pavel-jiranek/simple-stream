@@ -31,6 +31,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     message = struct.pack('dd', num1, num2)
 
                     conn.sendall(message)
-                    time.sleep(0.01)
+                    print(f"Sent: {num1}, {num2}")
+
+                    time.sleep(0.1)
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 print(f"Client disconnected from {addr}")
