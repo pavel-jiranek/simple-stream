@@ -31,13 +31,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         with conn:
             try:
                 while True:
-                    num1 = random.randint(-2147483648, 2147483647)
-                    num2 = random.randint(-2147483648, 2147483647)
-                    message = struct.pack("ii", num1, num2)
+                    nums = [random.randint(0, 128) for _ in range(10)]
+                    message = struct.pack(f"{len(nums)}H", *nums)
 
                     conn.sendall(message)
-                    print(f"Sent: {num1}, {num2} to {addr}")
+                    print(f"Sent: {nums[0]}... to {addr}")
 
-                    time.sleep(0.1)
+                    time.sleep(0.01)
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 print(f"Client disconnected from {addr}")
