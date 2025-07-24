@@ -3,7 +3,6 @@ import random
 import socket
 import struct
 import time
-import numpy as np
 
 parser = argparse.ArgumentParser(description="UDP Server that sends random numbers")
 parser.add_argument(
@@ -17,9 +16,6 @@ args = parser.parse_args()
 
 host = args.host
 port = args.port
-
-data = np.linspace(-0.1, 0.1, 100)
-pos = 0
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -36,16 +32,21 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         with conn:
             try:
                 while True:
-                    nums = []
+                    triplets = []
                     for _ in range(10):
-                        nums.append(data[pos])
-                        pos += 1
-                        pos %= len(data)
+                        float_val = random.uniform(-0.1, 0.1)
+                        byte_val = random.randint(0, 1)
+                        uint32_val = random.randint(0, 2**32 - 1)
 
-                    message = struct.pack(f"{len(nums)}f", *nums)
+                        triplets.extend([float_val, byte_val, uint32_val])
+
+                    format_string = "fBI" * 10
+                    message = struct.pack(format_string, *triplets)
 
                     conn.sendall(message)
-                    print(f"Sent: {nums[0]}... to {addr}")
+                    print(
+                        f"Sent triplet: ({triplets[0]:.3f}, {triplets[1]}, {triplets[2]})... to {addr}"
+                    )
 
                     time.sleep(0.1)
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):

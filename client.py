@@ -15,17 +15,20 @@ args = parser.parse_args()
 host = args.host
 port = args.port
 
+format_string = "fBI" * 10
+item_size = struct.calcsize(format_string)
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    print("Connecting...")
     s.connect((host, port))
+    print("Connected!")
 
     while True:
-        data = s.recv(1024)
+        data = s.recv(item_size)
         if not data:
             break
 
-        num_messages = len(data) // 8  # 8 bytes per message = 2 ints
-        for i in range(num_messages):
-            start_index = i * 8
-            end_index = start_index + 8
-            num1, num2 = struct.unpack("ii", data[start_index:end_index])
-            print(f"Received: {num1}, {num2} from {host}:{port}")
+        print(f"Received {len(data)} bytes...")
+
+        triplets = struct.unpack(format_string, data)
+        print(f"Received triplet: ({triplets[0]:.3f}, {triplets[1]}, {triplets[2]})...")
