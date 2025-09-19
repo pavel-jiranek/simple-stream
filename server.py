@@ -41,6 +41,24 @@ port = args.port
 period = args.period
 size = args.size
 
+def send_stream(conn):
+    overall_start_time = time.monotonic()
+    while True:
+        start_time = time.monotonic()
+        values = [random.uniform(0.0, 1.0) for _ in range(size)]
+        if len(values) <= 3:
+            formatted = ", ".join(["{:.3f}".format(num) for num in values])
+        else:
+            formatted = "{:.3f}, {:.3f},... {:.3f}".format(values[0], values[1], values[-1])
+        message = struct.pack(f"<{size}f", *values)
+        timestamp = time.monotonic() - overall_start_time
+        print("{:.0f}s: Sent {} values: {}".format(timestamp, len(values), formatted))
+
+        conn.sendall(message)
+
+        time.sleep(max(0, period - (time.monotonic() - start_time)))
+
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((host, port))
@@ -54,18 +72,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         print(f"Client connected from {addr}")
 
         with conn:
-            overall_start_time = time.monotonic()
-            try:
-                while True:
-                    start_time = time.monotonic()
-                    values = [random.uniform(0.0, 1.0) for _ in range(size)]
-                    formatted = ", ".join([f"{num:.3f}" for num in values])
-                    message = struct.pack(f"<{size}f", *values)
-                    timestamp = time.monotonic() - overall_start_time
-                    print(f"{timestamp:.0f}s: Sent {len(values)} values: {formatted}")
+            send_stream(conn)
 
-                    conn.sendall(message)
-
-                    time.sleep(max(0, period - (time.monotonic() - start_time)))
-            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
-                print(f"Client disconnected from {addr}")
