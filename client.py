@@ -20,39 +20,49 @@ parser.add_argument(
     help="Port number (default: 1234)",
 )
 parser.add_argument(
-    "--rate",
+    "--period",
     type=float,
     default=0.1,
-    help="Rate of receiving numbers (default: 0.1)",
+    help="Period of receiving numbers (default: 0.1)",
+)
+parser.add_argument(
+    "--size",
+    type=int,
+    default=10,
+    help="Expected size of the message (default: 10)",
 )
 
 args = parser.parse_args()
 
 host = args.host
 port = args.port
-rate = args.rate
-bufsize = 1024
+period = args.period
+bufsize = args.size * struct.calcsize("<f")
+
+def receive_stream(s):
+    overall_start_time = time.monotonic()
+    while True:
+        start_time = time.monotonic()
+        data = s.recv(bufsize)
+        if not data:
+            print("No data received")
+            break
+
+        unpacked = struct.iter_unpack("<f", data)
+        values = [item[0] for item in unpacked]
+        if len(values) <= 3:
+            formatted = ", ".join(["{:.3f}".format(num) for num in values])
+        else:
+            formatted = "{:.3f}, {:.3f},... {:.3f}".format(values[0], values[1], values[-1])
+        timestamp = time.monotonic() - overall_start_time
+        print("{:.0f}s: Received {} values: {}".format(timestamp, len(values), formatted))
+
+        time.sleep(max(0, period - (time.monotonic() - start_time)))
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     print(f"Connecting to {host}:{port}...")
     s.connect((host, port))
 
-    overall_start_time = time.monotonic()
-    while True:
-        try:
-            start_time = time.monotonic()
-            data = s.recv(bufsize)
-            if not data:
-                print("No data received")
-                break
+    receive_stream(s)
 
-            unpacked = struct.iter_unpack("<f", data)
-            values = [item[0] for item in unpacked]
-            formatted = ", ".join([f"{num:.3f}" for num in values])
-            timestamp = time.monotonic() - overall_start_time
-            print(f"{timestamp:.0f}s: Received {len(values)} values: {formatted}")
-
-            time.sleep(max(0, rate - (time.monotonic() - start_time)))
-        except Exception as e:
-            print(f"Error receiving data: {e}")
-            pass
