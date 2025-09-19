@@ -31,7 +31,7 @@ parser.add_argument(
     "--size",
     type=int,
     default=10,
-    help="Size of the message (default: 10)",
+    help="Size of the message (default: 500)",
 )
 
 args = parser.parse_args()
